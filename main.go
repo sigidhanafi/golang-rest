@@ -1,6 +1,7 @@
 package main
 
 import (
+	"golang-rest/book"
 	"golang-rest/handler"
 	"log"
 
@@ -13,7 +14,7 @@ func main() {
 
 	// database connection
 	dsn := "root:@tcp(127.0.0.1:3306)/golangweb-gin?charset=utf8mb4&parseTime=True&loc=Local"
-	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Database connection failed")
@@ -24,7 +25,10 @@ func main() {
 	// register the router
 	router := gin.Default()
 
-	router.GET("/books", handler.GetBooks)
+	bookRepository := book.NewRepository(db)
+	bookService := book.NewService(bookRepository)
+	bookHandler := handler.NewBookHandler(bookService)
+	router.GET("/books", bookHandler.GetBooks)
 
 	router.Run()
 }
