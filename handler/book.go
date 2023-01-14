@@ -3,6 +3,7 @@ package handler
 import (
 	"golang-rest/book"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +17,6 @@ func NewBookHandler(service book.Service) bookHandler {
 }
 
 func (h *bookHandler) GetBooks(c *gin.Context) {
-
-	// data := []book.Book{
-	// 	{ID: 1, Title: "Psycology of Money"},
-	// 	{ID: 2, Title: "Steve Jobs"},
-	// }
 
 	books, err := h.service.FindAll()
 
@@ -41,5 +37,35 @@ func (h *bookHandler) GetBooks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "OK",
 		"data":   bookResponse,
+	})
+}
+
+func (h *bookHandler) GetBookByID(c *gin.Context) {
+
+	ID := c.Param("id")
+	idInt, err := strconv.Atoi(ID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	dataBook, err := h.service.FindByID(idInt)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	bookResponse := book.BookResponse{ID: dataBook.ID, Price: dataBook.Price, Description: dataBook.Description, Title: dataBook.Title}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "",
+		"data":    bookResponse,
 	})
 }

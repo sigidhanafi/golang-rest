@@ -25,10 +25,12 @@ func main() {
 	// register the router
 	router := gin.Default()
 
+	// Book Handler
 	bookRepository := book.NewRepository(db)
 	bookService := book.NewService(bookRepository)
 	bookHandler := handler.NewBookHandler(bookService)
 	router.GET("/books", bookHandler.GetBooks)
+	router.GET("/books/:id", bookHandler.GetBookByID)
 
 	router.Run()
 }
