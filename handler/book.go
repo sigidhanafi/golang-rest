@@ -69,3 +69,28 @@ func (h *bookHandler) GetBookByID(c *gin.Context) {
 		"data":    bookResponse,
 	})
 }
+
+func (h *bookHandler) DeleteByID(c *gin.Context) {
+	ID := c.Param("id")
+	idInt, err := strconv.Atoi(ID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	err = h.service.DeleteByID(idInt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "OK",
+		"message": "Book deleted",
+	})
+}
