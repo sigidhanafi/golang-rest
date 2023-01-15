@@ -27,8 +27,10 @@ func (h *bookHandler) GetBooks(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "BAD Request",
-			"error":  err,
+			"error":  err.Error(),
 		})
+
+		return
 	}
 
 	var bookResponse []book.BookResponse
@@ -54,6 +56,8 @@ func (h *bookHandler) GetBookByID(c *gin.Context) {
 			"status":  "Error",
 			"message": err,
 		})
+
+		return
 	}
 
 	dataBook, err := h.service.FindByID(idInt)
@@ -61,8 +65,10 @@ func (h *bookHandler) GetBookByID(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "Error",
-			"message": err,
+			"message": err.Error(),
 		})
+
+		return
 	}
 
 	bookResponse := book.BookResponse{ID: dataBook.ID, Price: dataBook.Price, Description: dataBook.Description, Title: dataBook.Title}
@@ -83,14 +89,18 @@ func (h *bookHandler) DeleteByID(c *gin.Context) {
 			"status":  "Error",
 			"message": err,
 		})
+
+		return
 	}
 
 	err = h.service.DeleteByID(idInt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "Error",
-			"message": err,
+			"message": err.Error(),
 		})
+
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -134,7 +144,7 @@ func (h *bookHandler) Create(c *gin.Context) {
 
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "Error",
-			"message": err,
+			"message": err.Error(),
 		})
 
 		return
@@ -146,5 +156,62 @@ func (h *bookHandler) Create(c *gin.Context) {
 		"data":    book,
 	}
 
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *bookHandler) Update(c *gin.Context) {
+	ID := c.Param("id")
+	idInt, err := strconv.Atoi(ID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+
+		return
+	}
+
+	var bookRequest book.BookRequest
+
+	err = c.ShouldBindJSON(&bookRequest)
+
+	if err != nil {
+		log.Println(err)
+
+		var validationError validator.ValidationErrors
+		errorMessages := []string{}
+		if errors.As(err, &validationError) {
+			for _, e := range err.(validator.ValidationErrors) {
+				errorMessages = append(errorMessages, fmt.Sprintf("Error on field %s condition: %s", e.Field(), e.ActualTag()))
+			}
+		} else {
+			errorMessages = append(errorMessages, err.Error())
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": errorMessages,
+		})
+
+		return
+	}
+
+	book, err := h.service.Update(idInt, bookRequest)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err.Error(),
+		})
+
+		return
+	}
+
+	response := map[string]interface{}{
+		"status":  "OK",
+		"message": "Book updated",
+		"data":    book,
+	}
 	c.JSON(http.StatusOK, response)
 }
