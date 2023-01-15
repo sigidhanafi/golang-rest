@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"golang-rest/book"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type bookHandler struct {
@@ -102,9 +105,23 @@ func (h *bookHandler) Create(c *gin.Context) {
 	err := c.ShouldBindJSON(&bookRequest)
 
 	if err != nil {
+
+		log.Println(err)
+
+		var validationError validator.ValidationErrors
+		errorMessage := []string{}
+
+		if errors.As(err, &validationError) {
+			for _, e := range err.(validator.ValidationErrors) {
+				errorMessage = append(errorMessage, fmt.Sprintf("Error on field %s condition: %s", e.Field(), e.ActualTag()))
+			}
+		} else {
+			errorMessage = append(errorMessage, err.Error())
+		}
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "Error",
-			"message": "",
+			"message": errorMessage,
 		})
 
 		return
