@@ -2,6 +2,7 @@ package handler
 
 import (
 	"golang-rest/book"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -93,4 +94,40 @@ func (h *bookHandler) DeleteByID(c *gin.Context) {
 		"status":  "OK",
 		"message": "Book deleted",
 	})
+}
+
+func (h *bookHandler) Create(c *gin.Context) {
+	var bookRequest book.BookRequest
+
+	err := c.ShouldBindJSON(&bookRequest)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": "",
+		})
+
+		return
+	}
+
+	book, err := h.service.Create(bookRequest)
+
+	if err != nil {
+		log.Println(err)
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err,
+		})
+
+		return
+	}
+
+	response := map[string]interface{}{
+		"success": "OK",
+		"message": "Book created",
+		"data":    book,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

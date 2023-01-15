@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type Repository interface {
 	FindAll() ([]Book, error)
 	FindByID(ID int) (Book, error)
+	Create(book Book) (Book, error)
 	DeleteByID(ID int) error
 }
 
@@ -34,4 +35,10 @@ func (r *repository) DeleteByID(ID int) error {
 	err := r.db.Delete(&Book{}, ID).Error
 
 	return err
+}
+
+func (r *repository) Create(book Book) (Book, error) {
+	err := r.db.Create(&book).Error
+
+	return book, err
 }

@@ -31,6 +31,7 @@ func main() {
 	bookHandler := handler.NewBookHandler(bookService)
 	router.GET("/books", bookHandler.GetBooks)
 	router.GET("/books/:id", bookHandler.GetBookByID)
+	router.POST("/books", bookHandler.Create)
 	router.DELETE("/books/:id", bookHandler.DeleteByID)
 
 	router.Run()

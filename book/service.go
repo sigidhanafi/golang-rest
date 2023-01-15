@@ -3,6 +3,7 @@ package book
 type Service interface {
 	FindAll() ([]Book, error)
 	FindByID(ID int) (Book, error)
+	Create(book BookRequest) (Book, error)
 	DeleteByID(ID int) error
 }
 
@@ -30,4 +31,15 @@ func (s *service) DeleteByID(ID int) error {
 	err := s.repository.DeleteByID(ID)
 
 	return err
+}
+
+func (s *service) Create(bookRequest BookRequest) (Book, error) {
+	bookParameter := Book{
+		Title:       bookRequest.Title,
+		Description: bookRequest.Description,
+		Price:       bookRequest.Price,
+	}
+	book, err := s.repository.Create(bookParameter)
+
+	return book, err
 }
